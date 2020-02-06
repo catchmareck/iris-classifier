@@ -44,7 +44,7 @@ def get_target(text_target):
         return np.array([0, 0, 1])
 
 
-learning_rate = 0.1
+learning_rate = 0.01
 bias = 1
 
 data = open('iris.data').readlines()
@@ -66,7 +66,7 @@ n_output = 3
 W1 = np.array([np.random.dirichlet(np.ones(n_hidden), size=1)[0] for i in range(n_input)])
 W2 = np.array([np.random.dirichlet(np.ones(n_output), size=1)[0] for i in range(n_hidden)])
 
-for epoch in range(100):
+for epoch in range(500):
 
     print('epoch %d' % epoch)
     for sample in trainset:
@@ -74,14 +74,14 @@ for epoch in range(100):
         INPUT = np.array([float(sample[i]) for i in range(n_input)])
         TARGET = get_target(sample[n_input])
 
-        H = np.array([tanh(INPUT.dot(W1[:,x])) for x in range(n_hidden)])
+        H = np.array([reLU(INPUT.dot(W1[:,x])) for x in range(n_hidden)])
         O = np.array([sigmoid(H.dot(W2[:,x])) for x in range(n_output)])
 
         O_e = TARGET - O
         H_e = O_e.dot(W2.T)
 
         O_d = np.array([(sigmoid_deriv(H.dot(W2[:,x])) * O_e[x]) for x in range(n_output)])
-        H_d = np.array([(tanh_deriv(INPUT.dot(W1[:,x])) * H_e[x]) for x in range(n_hidden)])
+        H_d = np.array([(softplus_deriv(INPUT.dot(W1[:,x])) * H_e[x]) for x in range(n_hidden)])
 
         W2 = update_weights(W2, O_d)
         W1 = update_weights(W1, H_d)
@@ -92,7 +92,7 @@ def classify(testset):
     for sample in testset:
         I = np.array([float(sample[i]) for i in range(n_input)])
         TARGET = get_target(sample[n_input])
-        H = np.array([tanh(I.dot(W1[:,x])) for x in range(n_hidden)])
+        H = np.array([reLU(I.dot(W1[:,x])) for x in range(n_hidden)])
         O = np.array([sigmoid(H.dot(W2[:,x])) for x in range(n_output)])
 
         print('for this sample', I, 'it should be', TARGET, 'but got', O, 'so', np.argmax(TARGET) == np.argmax(O))
